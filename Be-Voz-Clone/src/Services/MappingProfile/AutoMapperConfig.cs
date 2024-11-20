@@ -20,6 +20,7 @@ public class AutoMapperConfig : Profile
         CreateMap<ApplicationUser, AccountRegisterResponse>().ReverseMap();
         CreateMap<ApplicationUser, AccountLoginRequest>().ReverseMap();
         CreateMap<ApplicationUser, UserResponse>().ReverseMap();
+        CreateMap<ApplicationUser, AccountResponse>();
         CreateMap<Category, CategoryRequest>().ReverseMap();
         CreateMap<Category, CategoryResponse>();
         CreateMap<Forum, ForumRequest>().ReverseMap();
@@ -87,5 +88,6 @@ public class AutoMapperConfig : Profile
             .ForMember(x => x.UserName, opt => opt.MapFrom(src => src.User.DisplayName))
             .ForMember(x => x.AvatarUrl, opt => opt.MapFrom(src => src.User.AvatarUrl))
             .ReverseMap();
+
     }
 }

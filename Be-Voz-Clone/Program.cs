@@ -67,6 +67,7 @@ builder.Services.AddScoped<IEmojiAndStickerService, EmojiAndStickerService>();
 builder.Services.AddScoped<ISearchService, SearchService>();
 builder.Services.AddScoped<ICommentService, CommentService>();
 builder.Services.AddScoped<IViewedThreadService, ViewedThreadService>();
+builder.Services.AddScoped<IAdminService, AdminService>();
 builder.Services.AddAutoMapper(typeof(Program));
 var app = builder.Build();
 
