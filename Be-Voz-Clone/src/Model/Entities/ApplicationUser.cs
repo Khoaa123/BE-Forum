@@ -9,7 +9,10 @@ namespace Be_Voz_Clone.src.Model.Entities
         public DateTime RefreshTokenExpiryTime { get; set; }
         public DateTime JoinedDate { get; set; }
         public string? AvatarUrl { get; set; }
-        public string ReactionScore { get; set; }
+        public int ReactionScore { get; set; }
+        public string? CoverImageUrl { get; set; }
+        public string? Badge { get; set; }
+        public DateTime LastActivity { get; set; }
         public ICollection<VozThread> Threads { get; set; }
     }
 }

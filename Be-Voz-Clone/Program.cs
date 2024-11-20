@@ -11,17 +11,16 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Fix lỗi DateTime PostgreSql
+AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 // Add services to the container.
-
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-
-
 // Configure Posstgres Server
-builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
-
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // Identity
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
@@ -29,7 +28,6 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
     .AddRoles<IdentityRole>()
     .AddDefaultTokenProviders()
     .AddDefaultUI();
-
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -38,7 +36,7 @@ builder.Services.AddAuthentication(options =>
 }).AddJwtBearer(options =>
 {
     options.SaveToken = true;
-    options.TokenValidationParameters = new TokenValidationParameters()
+    options.TokenValidationParameters = new TokenValidationParameters
     {
         ValidIssuer = builder.Configuration["JWT:ValidIssuer"],
         ValidAudience = builder.Configuration["JWT:ValidAudience"],
@@ -50,41 +48,26 @@ builder.Services.AddAuthentication(options =>
         ClockSkew = TimeSpan.Zero
     };
 });
-
 builder.Services.Configure<DataProtectionTokenProviderOptions>(opts => opts.TokenLifespan = TimeSpan.FromHours(1));
-
-
 // Cors
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("MyCors", build =>
-    {
-        build.WithOrigins("http://localhost:3000").AllowAnyMethod().AllowAnyHeader().AllowCredentials();
-    });
+    options.AddPolicy("MyCors",
+        build => { build.WithOrigins("http://localhost:3000").AllowAnyMethod().AllowAnyHeader().AllowCredentials(); });
 });
-
-
 
 // Exception
 builder.Services.AddExceptionHandler<AppExceptionHandler>();
-
 builder.Services.AddScoped<IAccountService, AccountService>();
-
 builder.Services.AddScoped<ICategoryService, CategoryService>();
-
 builder.Services.AddScoped<IForumService, ForumService>();
-
 builder.Services.AddScoped<IThreadService, ThreadService>();
-
 builder.Services.AddScoped<ICloudinaryService, CloudinaryService>();
-
 builder.Services.AddScoped<IEmojiAndStickerService, EmojiAndStickerService>();
-
+builder.Services.AddScoped<ISearchService, SearchService>();
+builder.Services.AddScoped<ICommentService, CommentService>();
+builder.Services.AddScoped<IViewedThreadService, ViewedThreadService>();
 builder.Services.AddAutoMapper(typeof(Program));
-
-// Fix lỗi DateTime PostgreSql
-AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
-
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -95,15 +78,9 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseExceptionHandler(_ => { });
-
 app.UseCors("MyCors");
-
 app.UseHttpsRedirection();
-
 app.UseAuthorization();
-
 app.MapControllers();
-
 app.MapIdentityApi<ApplicationUser>();
-
 app.Run();

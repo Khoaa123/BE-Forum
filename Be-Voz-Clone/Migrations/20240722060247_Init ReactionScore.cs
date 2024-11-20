@@ -5,17 +5,17 @@
 namespace Be_Voz_Clone.Migrations
 {
     /// <inheritdoc />
-    public partial class AddReactionScore : Migration
+    public partial class InitReactionScore : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AddColumn<string>(
+            migrationBuilder.AddColumn<int>(
                 name: "ReactionScore",
                 table: "AspNetUsers",
-                type: "text",
+                type: "integer",
                 nullable: false,
-                defaultValue: "");
+                defaultValue: 0);
         }
 
         /// <inheritdoc />

@@ -4,7 +4,7 @@
     {
         public int Id { get; set; }
         public string Title { get; set; }
-        public bool IsSticky { get; set; } // Đánh dấu Thread có được ghim lên đầu không.
+        public bool IsSticky { get; set; }
         public string Content { get; set; }
         public DateTime CreatedAt { get; set; }
         public int ViewCount { get; set; }
@@ -15,5 +15,7 @@
         public Forum Forum { get; set; }
         public ICollection<Comment> Comments { get; set; }
         public ICollection<Report> Reports { get; set; }
+        public bool IsHidden { get; set; }
+        public DateTime? DeletedAt { get; set; }
     }
 }
