@@ -50,7 +50,7 @@ public class CommentService : ICommentService
                     existingReaction.CreatedAt = localTime;
                     await _context.SaveChangesAsync();
                     response.StatusCode = ResponseCode.OK;
-                    response.Message = "Reaction updated!";
+                    //response.Message = "Reaction updated!";
                     response.Data = _mapper.Map<ReactionResponse>(existingReaction);
                 }
                 else
@@ -77,7 +77,7 @@ public class CommentService : ICommentService
             await _context.Reactions.AddAsync(reaction);
             await _context.SaveChangesAsync();
             response.StatusCode = ResponseCode.CREATED;
-            response.Message = "Reaction added!";
+            //response.Message = "Reaction added!";
             response.Data = _mapper.Map<ReactionResponse>(reaction);
         }
 
@@ -99,7 +99,7 @@ public class CommentService : ICommentService
         await _context.Comments.AddAsync(comment);
         await _context.SaveChangesAsync();
         response.StatusCode = ResponseCode.CREATED;
-        response.Message = "Comment created!";
+        //response.Message = "Comment created!";
         response.Data = _mapper.Map<CommentResponse>(comment);
         return response;
     }
@@ -112,7 +112,7 @@ public class CommentService : ICommentService
             .Where(x => x.UserId == userId).ToListAsync();
         if (comments == null) throw new NotFoundException("Comments not found!");
         response.StatusCode = ResponseCode.OK;
-        response.Message = "Get all comment";
+        //response.Message = "Get all comment";
         response.Data = _mapper.Map<List<CommentResponse>>(comments);
         return response;
     }
@@ -126,7 +126,7 @@ public class CommentService : ICommentService
             .FirstOrDefaultAsync(x => x.Id == id);
         if (comment == null) throw new NotFoundException("Comment not found!");
         response.StatusCode = ResponseCode.OK;
-        response.Message = "Get comment";
+        //response.Message = "Get comment";
         response.Data = _mapper.Map<CommentResponse>(comment);
         return response;
     }
@@ -146,7 +146,7 @@ public class CommentService : ICommentService
         await _context.Comments.AddAsync(replyComment);
         await _context.SaveChangesAsync();
         response.StatusCode = ResponseCode.CREATED;
-        response.Message = "Reply comment created!";
+        //response.Message = "Reply comment created!";
         response.Data = _mapper.Map<CommentResponse>(replyComment);
         return response;
     }

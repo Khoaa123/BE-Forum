@@ -1,45 +1,29 @@
 ﻿using AutoMapper;
 using Be_Voz_Clone.src.Model.Entities;
+using Be_Voz_Clone.src.Repositories;
 using Be_Voz_Clone.src.Services.DTO.Category;
 using Be_Voz_Clone.src.Shared.Core.Enums;
 using Be_Voz_Clone.src.Shared.Core.Exceptions;
-using Be_Voz_Clone.src.Shared.Database.DbContext;
-using Microsoft.EntityFrameworkCore;
 
 namespace Be_Voz_Clone.src.Services.Implement;
 
 public class CategoryService : ICategoryService
 {
-    private readonly AppDbContext _context;
+    private readonly ICategoryRepository _categoryRepository;
     private readonly IMapper _mapper;
 
-    public CategoryService(IMapper mapper, AppDbContext context)
+    public CategoryService(ICategoryRepository categoryRepository, IMapper mapper)
     {
+        _categoryRepository = categoryRepository;
         _mapper = mapper;
-        _context = context;
     }
 
     public async Task<CategoryObjectResponse> CreateAsync(CategoryRequest request)
     {
         CategoryObjectResponse response = new();
         var category = _mapper.Map<Category>(request);
-        await _context.Categories.AddAsync(category);
-        await _context.SaveChangesAsync();
+        await _categoryRepository.AddAsync(category);
         response.StatusCode = ResponseCode.CREATED;
-        response.Message = "Category created!";
-        response.Data = _mapper.Map<CategoryResponse>(category);
-        return response;
-    }
-
-    public async Task<CategoryObjectResponse> DeleteAsync(int id)
-    {
-        CategoryObjectResponse response = new();
-        var category = await _context.Categories.FirstOrDefaultAsync(x => x.Id == id);
-        if (category == null) throw new NotFoundException("Category not found!");
-        _context.Categories.Remove(category);
-        await _context.SaveChangesAsync();
-        response.StatusCode = ResponseCode.OK;
-        response.Message = "Category deleted!";
         response.Data = _mapper.Map<CategoryResponse>(category);
         return response;
     }
@@ -48,14 +32,28 @@ public class CategoryService : ICategoryService
     {
         CategoryListObjectResponse response = new();
         var skipResults = (pageNumber - 1) * pageSize;
-        var totalProducts = await _context.Categories.CountAsync();
-        var totalPages = (int)Math.Ceiling((double)totalProducts / pageSize);
-        var categories = await _context.Categories.ToListAsync();
+        var categories = await _categoryRepository.FindByCondition(null);
         var categoriesPerPage = categories.Skip(skipResults).Take(pageSize).ToList();
+        var totalPages = (int)Math.Ceiling((double)categories.Count / pageSize);
+
         response.StatusCode = ResponseCode.OK;
-        response.Message = "Categories retrieved!";
         response.Data = _mapper.Map<List<CategoryResponse>>(categoriesPerPage);
         response.TotalPages = totalPages;
+        return response;
+    }
+
+    public async Task<CategoryObjectResponse> DeleteAsync(int id)
+    {
+        CategoryObjectResponse response = new();
+        var category = await _categoryRepository.FirstOrDefaultAsync(x => x.Id == id);
+        if (category == null)
+        {
+            throw new NotFoundException("Category not found!");
+        }
+
+        await _categoryRepository.Remove(category);
+        response.StatusCode = ResponseCode.OK;
+        response.Data = _mapper.Map<CategoryResponse>(category);
         return response;
     }
 }

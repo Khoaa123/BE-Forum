@@ -22,6 +22,5 @@ namespace Be_Voz_Clone.src.API.Controllers
             var result = await _emojiAndStickerService.GetUrl(name);
             return Ok(result);
         }
-
     }
 }

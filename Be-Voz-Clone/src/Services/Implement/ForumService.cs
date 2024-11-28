@@ -29,7 +29,7 @@ public class ForumService : IForumService
             .Include(f => f.Category)
             .FirstOrDefaultAsync(f => f.Id == forum.Id);
         response.StatusCode = ResponseCode.CREATED;
-        response.Message = "Forum created!";
+        //response.Message = "Forum created!";
         response.Data = _mapper.Map<ForumResponse>(createdForum);
         return response;
     }
@@ -42,7 +42,7 @@ public class ForumService : IForumService
         _context.Forums.Remove(forum);
         await _context.SaveChangesAsync();
         response.StatusCode = ResponseCode.OK;
-        response.Message = "Forum deleted!";
+        //response.Message = "Forum deleted!";
         response.Data = _mapper.Map<ForumResponse>(forum);
         return response;
     }
@@ -63,7 +63,7 @@ public class ForumService : IForumService
         }
         var forums = category.Forums.ToList();
         response.StatusCode = ResponseCode.OK;
-        response.Message = "Forums retrieved!";
+        //response.Message = "Forums retrieved!";
         response.Data = _mapper.Map<List<ForumResponse>>(forums);
         return response;
     }

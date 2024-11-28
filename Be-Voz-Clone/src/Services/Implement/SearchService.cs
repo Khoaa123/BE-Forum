@@ -48,14 +48,14 @@ public class SearchService : ISearchService
                 .ToListAsync();
             if (result == null || result.Count == 0) throw new NotFoundException("No threads found");
             response.StatusCode = ResponseCode.OK;
-            response.Message = "Threads retrieved successfully";
+            //response.Message = "Threads retrieved successfully";
             response.Data = _mapper.Map<List<SearchResponse>>(result);
             response.TotalPages = totalPages;
         }
         catch (Exception ex)
         {
             response.StatusCode = ResponseCode.BADREQUEST;
-            response.Message = "Search failed: " + ex.Message;
+            //response.Message = "Search failed: " + ex.Message;
         }
 
         return response;

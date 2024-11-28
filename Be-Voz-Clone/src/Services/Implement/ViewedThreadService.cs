@@ -31,7 +31,7 @@ public class ViewedThreadService : IViewedThreadService
             .ToListAsync();
         if (!viewedThreads.Any()) throw new NotFoundException("No viewed threads found.");
         response.StatusCode = ResponseCode.OK;
-        response.Message = "Viewed threads retrieved successfully!";
+        //response.Message = "Viewed threads retrieved successfully!";
         response.Data = _mapper.Map<List<ViewedThreadResponse>>(viewedThreads);
         return response;
     }

@@ -14,19 +14,22 @@ namespace Be_Voz_Clone.src.Repositories.Implement
             _context = context;
             _dbSet = context.Set<T>();
         }
+
+        // Thêm mới một entity vào cơ sở dữ liệu
         public async Task<T> AddAsync(T entity)
         {
-            var addedEntity = (await _dbSet.AddAsync(entity)).Entity;
+            var addedEntity = await _dbSet.AddAsync(entity);
             await _context.SaveChangesAsync();
-
-            return addedEntity;
+            return addedEntity.Entity;
         }
 
+        // Lấy tất cả các entity
         public async Task<List<T>> FindAllAsync()
         {
             return await _dbSet.ToListAsync();
         }
 
+        // Lọc các entity theo điều kiện filter
         public async Task<List<T>> FindByCondition(Expression<Func<T, bool>>? filter = null)
         {
             IQueryable<T> query = _dbSet;
@@ -39,31 +42,30 @@ namespace Be_Voz_Clone.src.Repositories.Implement
             return await query.ToListAsync();
         }
 
+        // Lấy phần tử đầu tiên hoặc mặc định nếu không tìm thấy
         public async Task<T> FirstOrDefaultAsync(Expression<Func<T, bool>>? filter = null)
         {
-            IQueryable<T> query = _dbSet;
-
+            var query = _dbSet.AsQueryable();
             if (filter != null)
             {
                 query = query.Where(filter);
             }
-
             return await query.FirstOrDefaultAsync();
         }
 
+        // Xóa entity
         public async Task<T> Remove(T entity)
         {
             var removedEntity = _dbSet.Remove(entity).Entity;
             await _context.SaveChangesAsync();
-
             return removedEntity;
         }
 
+        // Cập nhật entity
         public async Task<T> Update(T entity)
         {
             _context.Update(entity);
             await _context.SaveChangesAsync();
-
             return entity;
         }
     }

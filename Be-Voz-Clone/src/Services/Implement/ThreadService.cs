@@ -37,7 +37,7 @@ public class ThreadService : IThreadService
             .Include(t => t.User)
             .FirstOrDefaultAsync(t => t.Id == thread.Id);
         response.StatusCode = ResponseCode.CREATED;
-        response.Message = "Thread created!";
+        //response.Message = "Thread created!";
         response.Data = _mapper.Map<ThreadResponse>(createdThread);
         return response;
     }
@@ -50,7 +50,7 @@ public class ThreadService : IThreadService
         _context.Threads.Remove(thread);
         await _context.SaveChangesAsync();
         response.StatusCode = ResponseCode.OK;
-        response.Message = "Thread deleted!";
+        //response.Message = "Thread deleted!";
         response.Data = _mapper.Map<ThreadResponse>(thread);
         return response;
     }
@@ -77,7 +77,7 @@ public class ThreadService : IThreadService
         var threadResponse = _mapper.Map<ThreadResponse>(thread);
         threadResponse.Comments = _mapper.Map<List<CommentResponse>>(commentPerPage);
         response.StatusCode = ResponseCode.OK;
-        response.Message = "Thread retrieved!";
+        //response.Message = "Thread retrieved!";
         response.Data = threadResponse;
         response.TotalPages = totalPages;
         return response;
@@ -102,7 +102,7 @@ public class ThreadService : IThreadService
             .Take(pageSize)
             .ToList();
         response.StatusCode = ResponseCode.OK;
-        response.Message = "Threads retrieved!";
+        //response.Message = "Threads retrieved!";
         response.Data = _mapper.Map<List<ThreadResponse>>(threadsPerPage);
         response.TotalPages = totalPages;
         return response;
@@ -119,7 +119,7 @@ public class ThreadService : IThreadService
             .ToListAsync();
         if (!threads.Any()) throw new NotFoundException("Threads not found!");
         response.StatusCode = ResponseCode.OK;
-        response.Message = "Get thread by userId!";
+        //response.Message = "Get thread by userId!";
         response.Data = _mapper.Map<List<ThreadResponse>>(threads);
         return response;
     }
@@ -174,7 +174,7 @@ public class ThreadService : IThreadService
         _context.Threads.Update(thread);
         await _context.SaveChangesAsync();
         response.StatusCode = ResponseCode.OK;
-        response.Message = "";
+        //response.Message = "";
         response.Data = _mapper.Map<ThreadResponse>(thread);
         return response;
     }

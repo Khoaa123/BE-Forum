@@ -1,25 +1,26 @@
-﻿using Be_Voz_Clone.src.Shared.Core.Exceptions;
-using Be_Voz_Clone.src.Shared.Database.DbContext;
-using Microsoft.EntityFrameworkCore;
+﻿using Be_Voz_Clone.src.Repositories;
+using Be_Voz_Clone.src.Shared.Core.Exceptions;
 
 namespace Be_Voz_Clone.src.Services.Implement;
 
 public class EmojiAndStickerService : IEmojiAndStickerService
 {
-    private readonly AppDbContext _context;
+    private readonly IEmojiAndStickerRepository _emojiAndStickerRepository;
 
-    public EmojiAndStickerService(AppDbContext context)
+    public EmojiAndStickerService(IEmojiAndStickerRepository emojiAndStickerRepository)
     {
-        _context = context;
+        _emojiAndStickerRepository = emojiAndStickerRepository;
     }
 
     public async Task<List<string>> GetUrl(string name)
     {
-        var urls = await _context.EmojiAndStickers
-            .Where(x => x.Name == name)
-            .Select(x => x.Url)
-            .ToListAsync();
-        if (urls == null || !urls.Any()) throw new NotFoundException("Not found!");
+        var urls = await _emojiAndStickerRepository.GetUrlsByNameAsync(name);
+
+        if (urls == null || !urls.Any())
+        {
+            throw new NotFoundException("Not found!");
+        }
+
         return urls;
     }
 }

@@ -11,6 +11,5 @@ namespace Be_Voz_Clone.src.Repositories.Implement
         {
             _context = context;
         }
-
     }
 }

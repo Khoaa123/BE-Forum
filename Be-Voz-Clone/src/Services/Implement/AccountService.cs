@@ -2,7 +2,6 @@
 using Be_Voz_Clone.src.Model.Entities;
 using Be_Voz_Clone.src.Services.DTO.Account;
 using Be_Voz_Clone.src.Services.DTO.User;
-using Be_Voz_Clone.src.Shared.Core.Enums;
 using Be_Voz_Clone.src.Shared.Core.Exceptions;
 using Be_Voz_Clone.src.Shared.Database.DbContext;
 using Microsoft.AspNetCore.Identity;
@@ -40,7 +39,7 @@ public class AccountService : IAccountService
 
     public async Task<TokenObjectResponse> GetRefreshTokenAsync(TokenRequest request)
     {
-        TokenObjectResponse response = new();
+        var response = new TokenObjectResponse();
         var principal = GetPrincipalFromExpiredToken(request.AccessToken);
         var username = principal.Identity.Name;
         var user = await _userManager.FindByNameAsync(username);
@@ -59,8 +58,9 @@ public class AccountService : IAccountService
         var newRefreshToken = GenerateRefreshToken();
         user.RefreshToken = newRefreshToken;
         await _userManager.UpdateAsync(user);
-        response.StatusCode = ResponseCode.OK;
-        response.Message = "Success";
+
+        response.AddMessage("Token refreshed successfully");
+
         response.Data = new TokenResponse
         {
             AccessToken = newAccessToken,
@@ -74,19 +74,27 @@ public class AccountService : IAccountService
         var response = new TokenObjectResponse();
         var user = await _userManager.FindByNameAsync(request.UserName);
         if (user == null) throw new NotFoundException("Invalid Username");
+
+        // Kiểm tra xem người dùng có bị ban hay không
+        if (user.LockoutEnd.HasValue && user.LockoutEnd.Value > DateTimeOffset.Now)
+        {
+            throw new ForbiddenException("User account is banned.");
+        }
+
         if (!await _userManager.CheckPasswordAsync(user, request.Password))
             throw new NotFoundException("Invalid Password");
+
         var userRoles = await _userManager.GetRolesAsync(user);
         var authClaims = new List<Claim>
         {
-            new(ClaimTypes.Name, request.UserName),
-            new(ClaimTypes.NameIdentifier, user.Id),
-            new("DisplayName", user.DisplayName),
-            new(Microsoft.IdentityModel.JsonWebTokens.JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+        new(ClaimTypes.Name, request.UserName),
+        new(ClaimTypes.NameIdentifier, user.Id),
+        new("DisplayName", user.DisplayName),
+        new(Microsoft.IdentityModel.JsonWebTokens.JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
         };
         foreach (var role in userRoles) authClaims.Add(new Claim(ClaimTypes.Role, role));
-        response.StatusCode = ResponseCode.OK;
-        response.Message = "Success";
+
+        response.AddMessage("Login success");
         response.Data = new TokenResponse
         {
             AccessToken = GenerateToken(authClaims),
@@ -101,7 +109,7 @@ public class AccountService : IAccountService
 
     public async Task<RegisterObjectResponse> RegisterAsync(AccountRegisterRequest request, string role)
     {
-        RegisterObjectResponse response = new();
+        var response = new RegisterObjectResponse();
         var existingUser = await _userManager.FindByNameAsync(request.UserName);
         if (existingUser != null) throw new BadRequestException("User already exists!");
         var user = _mapper.Map<ApplicationUser>(request);
@@ -109,15 +117,17 @@ public class AccountService : IAccountService
         if (result.Succeeded)
         {
             if (!await _roleManager.RoleExistsAsync(role)) await _roleManager.CreateAsync(new IdentityRole(role));
-            response.StatusCode = ResponseCode.CREATED;
-            response.Message = "Account created!";
+
+            await _userManager.AddToRoleAsync(user, role);
+
+            response.AddMessage("Account created!");
             response.Data = _mapper.Map<AccountRegisterResponse>(user);
         }
         else
         {
             var errorDescription = result.Errors.FirstOrDefault()?.Description ?? "Unknown error";
-            response.StatusCode = ResponseCode.BADREQUEST;
-            response.Message = $"Account creation failed: {errorDescription}";
+
+            response.AddError($"Account creation failed: {errorDescription}");
         }
 
         return response;
@@ -148,11 +158,11 @@ public class AccountService : IAccountService
 
     public async Task<UserObjectResponse> GetUserAsync(string userId)
     {
-        UserObjectResponse response = new();
+        var response = new UserObjectResponse();
         var user = await _userManager.FindByIdAsync(userId);
         if (user == null) throw new NotFoundException("User not found!");
-        response.StatusCode = ResponseCode.OK;
-        response.Message = "Get user";
+
+        response.AddMessage("Get user success");
         response.Data = _mapper.Map<UserResponse>(user);
         return response;
     }

@@ -16,6 +16,7 @@ namespace Be_Voz_Clone.src.API.Controllers
         {
             _categoryService = categoryService;
         }
+
         // GET: api/<CategoryController>
         [HttpGet]
         public async Task<IActionResult> Get(int pageNumber = 1, int pageSize = 5)
@@ -31,7 +32,6 @@ namespace Be_Voz_Clone.src.API.Controllers
             var result = await _categoryService.CreateAsync(request);
             return StatusCode((int)result.StatusCode, result);
         }
-
 
         // DELETE api/<CategoryController>/5
         [HttpDelete("{id}")]

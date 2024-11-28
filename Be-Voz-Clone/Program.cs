@@ -1,4 +1,6 @@
 ﻿using Be_Voz_Clone.src.Model.Entities;
+using Be_Voz_Clone.src.Repositories;
+using Be_Voz_Clone.src.Repositories.Implement;
 using Be_Voz_Clone.src.Services;
 using Be_Voz_Clone.src.Services.Implement;
 using Be_Voz_Clone.src.Shared.Core.Exceptions;
@@ -58,6 +60,7 @@ builder.Services.AddCors(options =>
 
 // Exception
 builder.Services.AddExceptionHandler<AppExceptionHandler>();
+
 builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IForumService, ForumService>();
@@ -68,6 +71,11 @@ builder.Services.AddScoped<ISearchService, SearchService>();
 builder.Services.AddScoped<ICommentService, CommentService>();
 builder.Services.AddScoped<IViewedThreadService, ViewedThreadService>();
 builder.Services.AddScoped<IAdminService, AdminService>();
+
+builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
+builder.Services.AddScoped<IEmojiAndStickerRepository, EmojiAndStickerRepository>();
+builder.Services.AddScoped<ICommentRepository, CommentRepository>();
+
 builder.Services.AddAutoMapper(typeof(Program));
 var app = builder.Build();
 
