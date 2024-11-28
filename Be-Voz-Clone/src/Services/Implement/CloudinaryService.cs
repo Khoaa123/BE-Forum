@@ -1,6 +1,7 @@
 ﻿using Be_Voz_Clone.src.Model.Entities;
 using Be_Voz_Clone.src.Repositories;
 using Be_Voz_Clone.src.Shared.Core.Exceptions;
+using Be_Voz_Clone.src.UnitOfWork;
 using CloudinaryDotNet;
 using CloudinaryDotNet.Actions;
 
@@ -9,9 +10,9 @@ namespace Be_Voz_Clone.src.Services.Implement;
 public class CloudinaryService : ICloudinaryService
 {
     private readonly Cloudinary _cloudinary;
-    private readonly IEmojiAndStickerRepository _emojiAndStickerRepository;
+    private readonly IUnitOfWork _unitOfWork;
 
-    public CloudinaryService(IConfiguration configuration, IEmojiAndStickerRepository emojiAndStickerRepository)
+    public CloudinaryService(IConfiguration configuration, IUnitOfWork unitOfWork)
     {
         var account = new Account(
             configuration["Cloudinary:CloudName"],
@@ -19,7 +20,7 @@ public class CloudinaryService : ICloudinaryService
             configuration["Cloudinary:ApiSecret"]
         );
         _cloudinary = new Cloudinary(account);
-        _emojiAndStickerRepository = emojiAndStickerRepository;
+        _unitOfWork = unitOfWork;
     }
 
     public async Task<string> UploadAvatarAsync(IFormFile file, string folder, string userId)
@@ -41,6 +42,8 @@ public class CloudinaryService : ICloudinaryService
     public async Task<List<string>> UploadImagesAsync(List<IFormFile> files, string folder, string name)
     {
         var urls = new List<string>();
+
+        var emojiAndStickerRepository = _unitOfWork.GetRepository<IEmojiAndStickerRepository>();
 
         foreach (var file in files)
         {
@@ -64,8 +67,10 @@ public class CloudinaryService : ICloudinaryService
                 Name = name
             };
 
-            await _emojiAndStickerRepository.AddAsync(emojiAndSticker);
+            await emojiAndStickerRepository.AddAsync(emojiAndSticker);
         }
+
+        await _unitOfWork.SaveChangesAsync();
 
         return urls;
     }

@@ -1,20 +1,23 @@
 ﻿using Be_Voz_Clone.src.Repositories;
 using Be_Voz_Clone.src.Shared.Core.Exceptions;
+using Be_Voz_Clone.src.UnitOfWork;
 
 namespace Be_Voz_Clone.src.Services.Implement;
 
 public class EmojiAndStickerService : IEmojiAndStickerService
 {
-    private readonly IEmojiAndStickerRepository _emojiAndStickerRepository;
+    private readonly IUnitOfWork _unitOfWork;
 
-    public EmojiAndStickerService(IEmojiAndStickerRepository emojiAndStickerRepository)
+    public EmojiAndStickerService(IUnitOfWork unitOfWork)
     {
-        _emojiAndStickerRepository = emojiAndStickerRepository;
+        _unitOfWork = unitOfWork;
     }
 
     public async Task<List<string>> GetUrl(string name)
     {
-        var urls = await _emojiAndStickerRepository.GetUrlsByNameAsync(name);
+        var emojiAndStickerRepository = _unitOfWork.GetRepository<IEmojiAndStickerRepository>();
+
+        var urls = await emojiAndStickerRepository.GetUrlsByNameAsync(name);
 
         if (urls == null || !urls.Any())
         {

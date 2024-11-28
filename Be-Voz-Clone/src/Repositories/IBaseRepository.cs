@@ -10,6 +10,8 @@ namespace Be_Voz_Clone.src.Repositories
 
         Task<T> FirstOrDefaultAsync(Expression<Func<T, bool>>? filter = null);
 
+        Task<T> FirstOrDefaultWithIncludeAsync(Expression<Func<T, bool>>? filter = null, Func<IQueryable<T>, IQueryable<T>>? includeProperties = null);
+
         Task<T> AddAsync(T entity);
 
         Task<T> Update(T entity);

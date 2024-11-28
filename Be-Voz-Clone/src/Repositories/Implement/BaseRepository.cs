@@ -19,7 +19,6 @@ namespace Be_Voz_Clone.src.Repositories.Implement
         public async Task<T> AddAsync(T entity)
         {
             var addedEntity = await _dbSet.AddAsync(entity);
-            await _context.SaveChangesAsync();
             return addedEntity.Entity;
         }
 
@@ -53,11 +52,28 @@ namespace Be_Voz_Clone.src.Repositories.Implement
             return await query.FirstOrDefaultAsync();
         }
 
+        /// Lấy phần tử đầu tiên hoặc mặc định với include
+        public async Task<T> FirstOrDefaultWithIncludeAsync(Expression<Func<T, bool>>? filter = null, Func<IQueryable<T>, IQueryable<T>>? includeProperties = null)
+        {
+            IQueryable<T> query = _dbSet;
+
+            if (filter != null)
+            {
+                query = query.Where(filter);
+            }
+
+            if (includeProperties != null)
+            {
+                query = includeProperties(query);
+            }
+
+            return await query.FirstOrDefaultAsync();
+        }
+
         // Xóa entity
         public async Task<T> Remove(T entity)
         {
             var removedEntity = _dbSet.Remove(entity).Entity;
-            await _context.SaveChangesAsync();
             return removedEntity;
         }
 
@@ -65,7 +81,6 @@ namespace Be_Voz_Clone.src.Repositories.Implement
         public async Task<T> Update(T entity)
         {
             _context.Update(entity);
-            await _context.SaveChangesAsync();
             return entity;
         }
     }

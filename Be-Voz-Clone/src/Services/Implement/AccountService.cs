@@ -1,11 +1,11 @@
 ﻿using AutoMapper;
 using Be_Voz_Clone.src.Model.Entities;
+using Be_Voz_Clone.src.Repositories;
 using Be_Voz_Clone.src.Services.DTO.Account;
 using Be_Voz_Clone.src.Services.DTO.User;
 using Be_Voz_Clone.src.Shared.Core.Exceptions;
-using Be_Voz_Clone.src.Shared.Database.DbContext;
+using Be_Voz_Clone.src.UnitOfWork;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -18,14 +18,14 @@ public class AccountService : IAccountService
 {
     private readonly ICloudinaryService _cloudinaryService;
     private readonly IConfiguration _configuration;
-    private readonly AppDbContext _context;
+    private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
     private readonly RoleManager<IdentityRole> _roleManager;
     private readonly UserManager<ApplicationUser> _userManager;
     private SignInManager<ApplicationUser> _signInManager;
 
     public AccountService(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager,
-        RoleManager<IdentityRole> roleManager, IConfiguration configuration, IMapper mapper, AppDbContext context,
+        RoleManager<IdentityRole> roleManager, IConfiguration configuration, IMapper mapper, IUnitOfWork unitOfWork,
         ICloudinaryService cloudinaryService)
     {
         _userManager = userManager;
@@ -33,13 +33,13 @@ public class AccountService : IAccountService
         _roleManager = roleManager;
         _configuration = configuration;
         _mapper = mapper;
-        _context = context;
+        _unitOfWork = unitOfWork;
         _cloudinaryService = cloudinaryService;
     }
 
     public async Task<TokenObjectResponse> GetRefreshTokenAsync(TokenRequest request)
     {
-        var response = new TokenObjectResponse();
+        TokenObjectResponse response = new TokenObjectResponse();
         var principal = GetPrincipalFromExpiredToken(request.AccessToken);
         var username = principal.Identity.Name;
         var user = await _userManager.FindByNameAsync(username);
@@ -71,11 +71,10 @@ public class AccountService : IAccountService
 
     public async Task<TokenObjectResponse> LoginAsync(AccountLoginRequest request)
     {
-        var response = new TokenObjectResponse();
+        TokenObjectResponse response = new TokenObjectResponse();
         var user = await _userManager.FindByNameAsync(request.UserName);
         if (user == null) throw new NotFoundException("Invalid Username");
 
-        // Kiểm tra xem người dùng có bị ban hay không
         if (user.LockoutEnd.HasValue && user.LockoutEnd.Value > DateTimeOffset.Now)
         {
             throw new ForbiddenException("User account is banned.");
@@ -109,7 +108,7 @@ public class AccountService : IAccountService
 
     public async Task<RegisterObjectResponse> RegisterAsync(AccountRegisterRequest request, string role)
     {
-        var response = new RegisterObjectResponse();
+        RegisterObjectResponse response = new RegisterObjectResponse();
         var existingUser = await _userManager.FindByNameAsync(request.UserName);
         if (existingUser != null) throw new BadRequestException("User already exists!");
         var user = _mapper.Map<ApplicationUser>(request);
@@ -135,9 +134,10 @@ public class AccountService : IAccountService
 
     public async Task UpdateBadgesAsync()
     {
-        var users = await _context.Users.ToListAsync();
+        var userRepository = _unitOfWork.GetRepository<IUserRepository>();
+        var users = await userRepository.FindAllAsync();
         foreach (var user in users) user.Badge = CalculateBadge(user.ReactionScore);
-        await _context.SaveChangesAsync();
+        await _unitOfWork.SaveChangesAsync();
     }
 
     public async Task<string> UploadAvatarUrlAsync(string userId, IFormFile file)
@@ -158,7 +158,7 @@ public class AccountService : IAccountService
 
     public async Task<UserObjectResponse> GetUserAsync(string userId)
     {
-        var response = new UserObjectResponse();
+        UserObjectResponse response = new UserObjectResponse();
         var user = await _userManager.FindByIdAsync(userId);
         if (user == null) throw new NotFoundException("User not found!");
 

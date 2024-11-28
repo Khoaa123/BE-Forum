@@ -4,17 +4,18 @@ using Be_Voz_Clone.src.Repositories;
 using Be_Voz_Clone.src.Services.DTO.Category;
 using Be_Voz_Clone.src.Shared.Core.Enums;
 using Be_Voz_Clone.src.Shared.Core.Exceptions;
+using Be_Voz_Clone.src.UnitOfWork;
 
 namespace Be_Voz_Clone.src.Services.Implement;
 
 public class CategoryService : ICategoryService
 {
-    private readonly ICategoryRepository _categoryRepository;
+    private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
 
-    public CategoryService(ICategoryRepository categoryRepository, IMapper mapper)
+    public CategoryService(IUnitOfWork unitOfWork, IMapper mapper)
     {
-        _categoryRepository = categoryRepository;
+        _unitOfWork = unitOfWork;
         _mapper = mapper;
     }
 
@@ -22,7 +23,12 @@ public class CategoryService : ICategoryService
     {
         CategoryObjectResponse response = new();
         var category = _mapper.Map<Category>(request);
-        await _categoryRepository.AddAsync(category);
+
+        var categoryRepository = _unitOfWork.GetRepository<ICategoryRepository>();
+
+        await categoryRepository.AddAsync(category);
+        await _unitOfWork.SaveChangesAsync();
+
         response.StatusCode = ResponseCode.CREATED;
         response.Data = _mapper.Map<CategoryResponse>(category);
         return response;
@@ -32,7 +38,10 @@ public class CategoryService : ICategoryService
     {
         CategoryListObjectResponse response = new();
         var skipResults = (pageNumber - 1) * pageSize;
-        var categories = await _categoryRepository.FindByCondition(null);
+
+        var categoryRepository = _unitOfWork.GetRepository<ICategoryRepository>();
+
+        var categories = await categoryRepository.FindByCondition(null);
         var categoriesPerPage = categories.Skip(skipResults).Take(pageSize).ToList();
         var totalPages = (int)Math.Ceiling((double)categories.Count / pageSize);
 
@@ -45,13 +54,18 @@ public class CategoryService : ICategoryService
     public async Task<CategoryObjectResponse> DeleteAsync(int id)
     {
         CategoryObjectResponse response = new();
-        var category = await _categoryRepository.FirstOrDefaultAsync(x => x.Id == id);
+
+        var categoryRepository = _unitOfWork.GetRepository<ICategoryRepository>();
+
+        var category = await categoryRepository.FirstOrDefaultAsync(x => x.Id == id);
         if (category == null)
         {
             throw new NotFoundException("Category not found!");
         }
 
-        await _categoryRepository.Remove(category);
+        await categoryRepository.Remove(category);
+        await _unitOfWork.SaveChangesAsync();
+
         response.StatusCode = ResponseCode.OK;
         response.Data = _mapper.Map<CategoryResponse>(category);
         return response;

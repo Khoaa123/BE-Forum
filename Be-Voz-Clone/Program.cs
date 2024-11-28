@@ -5,6 +5,8 @@ using Be_Voz_Clone.src.Services;
 using Be_Voz_Clone.src.Services.Implement;
 using Be_Voz_Clone.src.Shared.Core.Exceptions;
 using Be_Voz_Clone.src.Shared.Database.DbContext;
+using Be_Voz_Clone.src.UnitOfWork;
+using Be_Voz_Clone.src.UnitOfWork.Implement;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -72,9 +74,15 @@ builder.Services.AddScoped<ICommentService, CommentService>();
 builder.Services.AddScoped<IViewedThreadService, ViewedThreadService>();
 builder.Services.AddScoped<IAdminService, AdminService>();
 
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 builder.Services.AddScoped<IEmojiAndStickerRepository, EmojiAndStickerRepository>();
 builder.Services.AddScoped<ICommentRepository, CommentRepository>();
+builder.Services.AddScoped<IReactionRepository, ReactionRepository>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IForumRepository, ForumRepository>();
+builder.Services.AddScoped<IThreadRepository, ThreadRepository>();
+builder.Services.AddScoped<IViewedThreadRepository, ViewedThreadRepository>();
 
 builder.Services.AddAutoMapper(typeof(Program));
 var app = builder.Build();

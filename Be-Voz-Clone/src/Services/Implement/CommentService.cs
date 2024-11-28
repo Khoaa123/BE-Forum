@@ -1,153 +1,164 @@
 ﻿using AutoMapper;
 using Be_Voz_Clone.src.Model.Entities;
+using Be_Voz_Clone.src.Repositories;
 using Be_Voz_Clone.src.Services.DTO.Comment;
 using Be_Voz_Clone.src.Services.DTO.Reaction;
 using Be_Voz_Clone.src.Shared.Core.Enums;
 using Be_Voz_Clone.src.Shared.Core.Exceptions;
-using Be_Voz_Clone.src.Shared.Database.DbContext;
-using Microsoft.EntityFrameworkCore;
+using Be_Voz_Clone.src.UnitOfWork;
 
 namespace Be_Voz_Clone.src.Services.Implement;
 
 public class CommentService : ICommentService
 {
-    private readonly AppDbContext _context;
+    private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
 
-    public CommentService(IMapper mapper, AppDbContext context)
+    public CommentService(IUnitOfWork unitOfWork, IMapper mapper)
     {
+        _unitOfWork = unitOfWork;
         _mapper = mapper;
-        _context = context;
     }
 
     public async Task<ReactionObjectResponse> AddReactionAsync(ReactionRequest request)
     {
-        ReactionObjectResponse response = new();
-        var utcNow = DateTime.UtcNow;
-        var localTime = utcNow.ToLocalTime();
-        var comment = await _context.Comments
-            .Include(c => c.User)
-            .FirstOrDefaultAsync(x => x.Id == request.CommentId);
+        ReactionObjectResponse response = new ReactionObjectResponse();
+
+        var commentRepository = _unitOfWork.GetRepository<ICommentRepository>();
+        var userRepository = _unitOfWork.GetRepository<IUserRepository>();
+        var reactionRepository = _unitOfWork.GetRepository<IReactionRepository>();
+
+        var comment = await commentRepository.FirstOrDefaultAsync(c => c.Id == request.CommentId);
         if (comment == null) throw new NotFoundException("Comment not found!");
-        var user = await _context.Users.FirstOrDefaultAsync(x => x.Id == request.UserId);
+
+        var user = await userRepository.FirstOrDefaultAsync(u => u.Id == request.UserId);
         if (user == null) throw new NotFoundException("User not found!");
-        var existingReaction =
-            await _context.Reactions.FirstOrDefaultAsync(x =>
-                x.CommentId == request.CommentId && x.UserId == request.UserId);
+
+        var existingReaction = await reactionRepository.FirstOrDefaultAsync(r =>
+            r.CommentId == request.CommentId && r.UserId == request.UserId);
+
         if (existingReaction != null)
         {
             if (existingReaction.Type != request.Type)
             {
-                if (comment.User != null)
-                {
-                    if (existingReaction.Type == ReactionType.Like)
-                        comment.User.ReactionScore -= 1;
-                    else if (existingReaction.Type == ReactionType.Dislike) comment.User.ReactionScore += 1;
-                    if (request.Type == ReactionType.Like)
-                        comment.User.ReactionScore += 1;
-                    else if (request.Type == ReactionType.Dislike) comment.User.ReactionScore -= 1;
-                    existingReaction.Type = request.Type;
-                    existingReaction.CreatedAt = localTime;
-                    await _context.SaveChangesAsync();
-                    response.StatusCode = ResponseCode.OK;
-                    //response.Message = "Reaction updated!";
-                    response.Data = _mapper.Map<ReactionResponse>(existingReaction);
-                }
-                else
-                {
-                    throw new InvalidOperationException("User is not associated with the comment.");
-                }
+                UpdateReactionScore(comment, existingReaction.Type, request.Type);
+                existingReaction.Type = request.Type;
+                existingReaction.CreatedAt = DateTime.UtcNow;
+                await reactionRepository.Update(existingReaction);
+                response.StatusCode = ResponseCode.OK;
+                response.AddMessage("Reaction updated!");
             }
         }
         else
         {
             var reaction = _mapper.Map<Reaction>(request);
-            reaction.CreatedAt = localTime;
-            if (comment.User != null)
-            {
-                if (request.Type == ReactionType.Like)
-                    comment.User.ReactionScore += 1;
-                else if (request.Type == ReactionType.Dislike) comment.User.ReactionScore -= 1;
-            }
-            else
-            {
-                throw new InvalidOperationException("User is not associated with the comment.");
-            }
-
-            await _context.Reactions.AddAsync(reaction);
-            await _context.SaveChangesAsync();
+            reaction.CreatedAt = DateTime.UtcNow;
+            UpdateReactionScore(comment, null, request.Type);
+            await reactionRepository.AddAsync(reaction);
             response.StatusCode = ResponseCode.CREATED;
-            //response.Message = "Reaction added!";
-            response.Data = _mapper.Map<ReactionResponse>(reaction);
+            response.AddMessage("Reaction added!");
         }
 
+        await _unitOfWork.SaveChangesAsync();
+        response.Data = _mapper.Map<ReactionResponse>(existingReaction ?? _mapper.Map<Reaction>(request));
         return response;
     }
 
     public async Task<CommentObjectResponse> CreateAsync(CommentRequest request)
     {
-        CommentObjectResponse response = new();
-        var thread = await _context.Threads.FirstOrDefaultAsync(x => x.Id == request.ThreadId);
-        if (thread == null) throw new NotFoundException("Thread not found!");
-        var user = await _context.Users.FirstOrDefaultAsync(x => x.Id == request.UserId);
+        CommentObjectResponse response = new CommentObjectResponse();
+
+        var userRepository = _unitOfWork.GetRepository<IUserRepository>();
+        var commentRepository = _unitOfWork.GetRepository<ICommentRepository>();
+
+        var user = await userRepository.FirstOrDefaultAsync(u => u.Id == request.UserId);
         if (user == null) throw new NotFoundException("User not found!");
-        var utcNow = DateTime.UtcNow;
-        var localTime = utcNow.ToLocalTime();
+
+        var thread = await commentRepository.FirstOrDefaultAsync(t => t.Id == request.ThreadId);
+        if (thread == null) throw new NotFoundException("Thread not found!");
+
         var comment = _mapper.Map<Comment>(request);
         comment.User = user;
-        comment.CreatedAt = localTime;
-        await _context.Comments.AddAsync(comment);
-        await _context.SaveChangesAsync();
+        comment.CreatedAt = DateTime.UtcNow;
+
+        await commentRepository.AddAsync(comment);
+        await _unitOfWork.SaveChangesAsync();
+
         response.StatusCode = ResponseCode.CREATED;
-        //response.Message = "Comment created!";
+        response.AddMessage("Comment created!");
         response.Data = _mapper.Map<CommentResponse>(comment);
         return response;
     }
 
     public async Task<CommentListObjectResponse> GetAllCommentAsync(string userId)
     {
-        CommentListObjectResponse response = new();
-        var comments = await _context.Comments
-            .Include(x => x.User)
-            .Where(x => x.UserId == userId).ToListAsync();
-        if (comments == null) throw new NotFoundException("Comments not found!");
+        CommentListObjectResponse response = new CommentListObjectResponse();
+
+        var commentRepository = _unitOfWork.GetRepository<ICommentRepository>();
+
+        var comments = await commentRepository.GetCommentsByUserIdAsync(userId);
+
+        if (comments == null || !comments.Any())
+        {
+            throw new NotFoundException("Comments not found!");
+        }
+
         response.StatusCode = ResponseCode.OK;
-        //response.Message = "Get all comment";
+        response.AddMessage("Get all comment");
         response.Data = _mapper.Map<List<CommentResponse>>(comments);
         return response;
     }
 
     public async Task<CommentObjectResponse> GetCommentId(int id)
     {
-        CommentObjectResponse response = new();
-        var comment = await _context.Comments
-            .Include(x => x.User)
-            .Include(x => x.Thread)
-            .FirstOrDefaultAsync(x => x.Id == id);
+        CommentObjectResponse response = new CommentObjectResponse();
+
+        var commentRepository = _unitOfWork.GetRepository<ICommentRepository>();
+
+        var comment = await commentRepository.GetCommentWithUserAndThreadAsync(id);
         if (comment == null) throw new NotFoundException("Comment not found!");
+
         response.StatusCode = ResponseCode.OK;
-        //response.Message = "Get comment";
+        response.AddMessage("Get comment");
         response.Data = _mapper.Map<CommentResponse>(comment);
         return response;
     }
 
     public async Task<CommentObjectResponse> ReplyAsync(CommentRequest request)
     {
-        CommentObjectResponse response = new();
-        var parentComment = await _context.Comments.FirstOrDefaultAsync(x => x.Id == request.ParentCommentId);
+        CommentObjectResponse response = new CommentObjectResponse();
+
+        var commentRepository = _unitOfWork.GetRepository<ICommentRepository>();
+
+        var parentComment = await commentRepository.FirstOrDefaultAsync(c => c.Id == request.ParentCommentId);
         if (parentComment == null) throw new NotFoundException("Parent comment not found!");
-        var thread = await _context.Threads.FirstOrDefaultAsync(x => x.Id == request.ThreadId);
+
+        var thread = await commentRepository.FirstOrDefaultAsync(t => t.Id == request.ThreadId);
         if (thread == null) throw new NotFoundException("Thread not found!");
+
         var replyComment = _mapper.Map<Comment>(request);
-        var utcNow = DateTime.UtcNow;
-        var localTime = utcNow.ToLocalTime();
+        replyComment.CreatedAt = DateTime.UtcNow;
         replyComment.ParentCommentId = request.ParentCommentId;
-        replyComment.CreatedAt = localTime;
-        await _context.Comments.AddAsync(replyComment);
-        await _context.SaveChangesAsync();
+
+        await commentRepository.AddAsync(replyComment);
+        await _unitOfWork.SaveChangesAsync();
+
         response.StatusCode = ResponseCode.CREATED;
-        //response.Message = "Reply comment created!";
+        response.AddMessage("Reply comment created!");
         response.Data = _mapper.Map<CommentResponse>(replyComment);
         return response;
+    }
+
+    private void UpdateReactionScore(Comment comment, ReactionType? oldType, ReactionType newType)
+    {
+        if (oldType == ReactionType.Like)
+            comment.User.ReactionScore -= 1;
+        else if (oldType == ReactionType.Dislike)
+            comment.User.ReactionScore += 1;
+
+        if (newType == ReactionType.Like)
+            comment.User.ReactionScore += 1;
+        else if (newType == ReactionType.Dislike)
+            comment.User.ReactionScore -= 1;
     }
 }
