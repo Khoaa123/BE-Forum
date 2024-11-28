@@ -1,11 +1,13 @@
 ﻿using AutoMapper;
 using Be_Voz_Clone.src.Model.Entities;
+using Be_Voz_Clone.src.Services.DTO.Account;
 using Be_Voz_Clone.src.Services.DTO.Category;
 using Be_Voz_Clone.src.Services.DTO.Comment;
 using Be_Voz_Clone.src.Services.DTO.Forum;
 using Be_Voz_Clone.src.Services.DTO.Reaction;
 using Be_Voz_Clone.src.Services.DTO.Search;
 using Be_Voz_Clone.src.Services.DTO.Thread;
+using Be_Voz_Clone.src.Services.DTO.User;
 using Be_Voz_Clone.src.Services.DTO.ViewedThread;
 
 namespace Be_Voz_Clone.src.Services.MappingProfile;
@@ -14,11 +16,11 @@ public class AutoMapperConfig : Profile
 {
     public AutoMapperConfig()
     {
-        //CreateMap<ApplicationUser, AccountRegisterRequest>().ReverseMap();
-        //CreateMap<ApplicationUser, AccountRegisterResponse>().ReverseMap();
-        //CreateMap<ApplicationUser, AccountLoginRequest>().ReverseMap();
-        //CreateMap<ApplicationUser, UserResponse>().ReverseMap();
-        //CreateMap<ApplicationUser, AccountResponse>();
+        CreateMap<ApplicationUser, AccountRegisterRequest>().ReverseMap();
+        CreateMap<ApplicationUser, AccountRegisterResponse>().ReverseMap();
+        CreateMap<ApplicationUser, AccountLoginRequest>().ReverseMap();
+        CreateMap<ApplicationUser, UserResponse>().ReverseMap();
+        CreateMap<ApplicationUser, AccountResponse>();
 
         CreateMap<Category, CategoryRequest>().ReverseMap();
         CreateMap<Category, CategoryResponse>();
@@ -87,6 +89,5 @@ public class AutoMapperConfig : Profile
             .ForMember(x => x.UserName, opt => opt.MapFrom(src => src.User.DisplayName))
             .ForMember(x => x.AvatarUrl, opt => opt.MapFrom(src => src.User.AvatarUrl))
             .ReverseMap();
-
     }
 }
