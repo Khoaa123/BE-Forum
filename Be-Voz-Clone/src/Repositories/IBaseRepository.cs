@@ -8,6 +8,8 @@ namespace Be_Voz_Clone.src.Repositories
 
         Task<List<T>> FindByCondition(Expression<Func<T, bool>>? filter = null);
 
+        Task<List<T>> FindByConditionWithIncludeAsync(Expression<Func<T, bool>>? filter = null, Func<IQueryable<T>, IQueryable<T>>? includeProperties = null);
+
         Task<T> FirstOrDefaultAsync(Expression<Func<T, bool>>? filter = null);
 
         Task<T> FirstOrDefaultWithIncludeAsync(Expression<Func<T, bool>>? filter = null, Func<IQueryable<T>, IQueryable<T>>? includeProperties = null);

@@ -41,6 +41,23 @@ namespace Be_Voz_Clone.src.Repositories.Implement
             return await query.ToListAsync();
         }
 
+        public async Task<List<T>> FindByConditionWithIncludeAsync(Expression<Func<T, bool>>? filter = null, Func<IQueryable<T>, IQueryable<T>>? includeProperties = null)
+        {
+            IQueryable<T> query = _dbSet;
+
+            if (filter != null)
+            {
+                query = query.Where(filter);
+            }
+
+            if (includeProperties != null)
+            {
+                query = includeProperties(query);
+            }
+
+            return await query.ToListAsync();
+        }
+
         // Lấy phần tử đầu tiên hoặc mặc định nếu không tìm thấy
         public async Task<T> FirstOrDefaultAsync(Expression<Func<T, bool>>? filter = null)
         {

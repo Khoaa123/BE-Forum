@@ -5,6 +5,7 @@ using Be_Voz_Clone.src.Services.DTO.Forum;
 using Be_Voz_Clone.src.Shared.Core.Enums;
 using Be_Voz_Clone.src.Shared.Core.Exceptions;
 using Be_Voz_Clone.src.UnitOfWork;
+using Microsoft.EntityFrameworkCore;
 
 namespace Be_Voz_Clone.src.Services.Implement;
 
@@ -61,7 +62,15 @@ public class ForumService : IForumService
 
         var forumRepository = _unitOfWork.GetRepository<IForumRepository>();
 
-        var forums = await forumRepository.FindByCondition(x => x.CategoryId == categoryId);
+        var forums = await forumRepository.FindByConditionWithIncludeAsync(
+            f => f.CategoryId == categoryId,
+            query => query
+                .Include(f => f.Category)
+                .Include(f => f.Threads)
+                    .ThenInclude(t => t.Comments)
+                .Include(f => f.Threads)
+                    .ThenInclude(t => t.User)
+        );
         if (forums == null || !forums.Any())
         {
             throw new NotFoundException("No forums found for this category!");
