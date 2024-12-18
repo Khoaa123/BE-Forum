@@ -9,6 +9,8 @@ public interface IAccountService
     Task<TokenObjectResponse> LoginAsync(AccountLoginRequest request);
     Task<TokenObjectResponse> GetRefreshTokenAsync(TokenRequest request);
     Task<UserObjectResponse> GetUserAsync(string userId);
+    Task<UserListObjectResponse> GetAllUserAsync(int pageNumber, int pageSize);
+    Task<UserObjectResponse> DeleteUserAsync(string userId);
     Task<string> UploadAvatarUrlAsync(string userId, IFormFile file);
     Task UpdateBadgesAsync();
 }

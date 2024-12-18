@@ -74,4 +74,18 @@ public class AccountController : ControllerBase
         var result = await _accountService.GetUserAsync(userId);
         return StatusCode((int)result.StatusCode, result);
     }
+
+    [HttpGet("GetAllUsers")]
+    public async Task<IActionResult> GetUser(int pageNumber = 1, int pageSize = 5)
+    {
+        var result = await _accountService.GetAllUserAsync(pageNumber, pageSize);
+        return StatusCode((int)result.StatusCode, result);
+    }
+
+    [HttpDelete("DeleteUser/{userId}")]
+    public async Task<IActionResult> DeleteUser(string userId)
+    {
+        var result = await _accountService.DeleteUserAsync(userId);
+        return StatusCode((int)result.StatusCode, result);
+    }
 }

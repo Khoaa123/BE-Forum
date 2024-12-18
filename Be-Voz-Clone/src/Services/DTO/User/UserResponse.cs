@@ -10,7 +10,10 @@ namespace Be_Voz_Clone.src.Services.DTO.User
         public string? AvatarUrl { get; set; }
         public int ReactionScore { get; set; }
         public string LastActivity { get; set; }
+        public string Role { get; set; }
     }
 
     public class UserObjectResponse : ObjectResponse<UserResponse> { }
+
+    public class UserListObjectResponse : ObjectResponse<List<UserResponse>> { }
 }

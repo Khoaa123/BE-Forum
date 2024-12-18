@@ -56,6 +56,32 @@ public class ForumService : IForumService
         return response;
     }
 
+    public async Task<ForumListObjectResponse> GetAllForumsAsync()
+    {
+        ForumListObjectResponse response = new ForumListObjectResponse();
+
+        var forumRepository = _unitOfWork.GetRepository<IForumRepository>();
+
+        var forums = await forumRepository.FindByConditionWithIncludeAsync(
+            null,
+            query => query
+                .Include(f => f.Category)
+                .Include(f => f.Threads)
+                    .ThenInclude(t => t.Comments)
+                .Include(f => f.Threads)
+                    .ThenInclude(t => t.User)
+        );
+
+        if (forums == null || !forums.Any())
+        {
+            throw new NotFoundException("No forums found");
+        }
+
+        response.AddMessage("Forums retrieved successfully!");
+        response.Data = _mapper.Map<List<ForumResponse>>(forums);
+        return response;
+    }
+
     public async Task<ForumListObjectResponse> GetForumsByCategoryAsync(int categoryId)
     {
         ForumListObjectResponse response = new ForumListObjectResponse();

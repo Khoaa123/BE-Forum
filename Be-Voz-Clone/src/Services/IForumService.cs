@@ -9,5 +9,7 @@ namespace Be_Voz_Clone.src.Services
         Task<ForumListObjectResponse> GetForumsByCategoryAsync(int categoryId);
 
         Task<ForumObjectResponse> DeleteAsync(int id);
+
+        Task<ForumListObjectResponse> GetAllForumsAsync();
     }
 }

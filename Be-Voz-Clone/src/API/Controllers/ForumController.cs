@@ -40,4 +40,11 @@ public class ForumController : ControllerBase
         var result = await _forumService.DeleteAsync(id);
         return StatusCode((int)result.StatusCode, result);
     }
+
+    [HttpGet("GetAllForums")]
+    public async Task<IActionResult> GetAllForums()
+    {
+        var result = await _forumService.GetAllForumsAsync();
+        return StatusCode((int)result.StatusCode, result);
+    }
 }

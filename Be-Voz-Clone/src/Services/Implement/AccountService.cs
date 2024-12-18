@@ -6,6 +6,7 @@ using Be_Voz_Clone.src.Services.DTO.User;
 using Be_Voz_Clone.src.Shared.Core.Exceptions;
 using Be_Voz_Clone.src.UnitOfWork;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -164,6 +165,48 @@ public class AccountService : IAccountService
 
         response.AddMessage("Get user success");
         response.Data = _mapper.Map<UserResponse>(user);
+        return response;
+    }
+
+    public async Task<UserListObjectResponse> GetAllUserAsync(int pageNumber, int pageSize)
+    {
+        UserListObjectResponse response = new UserListObjectResponse();
+        var skipResults = (pageNumber - 1) * pageSize;
+        var totalUsers = await _userManager.Users.ToListAsync();
+        var usersPerPage = totalUsers.Skip(skipResults).Take(pageSize).ToList();
+        var totalPages = (int)Math.Ceiling((double)totalUsers.Count / pageSize);
+
+        var userResponses = new List<UserResponse>();
+
+        foreach (var user in usersPerPage)
+        {
+            var roles = await _userManager.GetRolesAsync(user);
+            var userResponse = _mapper.Map<UserResponse>(user);
+            userResponse.Role = roles.FirstOrDefault();
+            userResponses.Add(userResponse);
+        }
+
+        response.AddMessage("Get all user success");
+        response.Data = userResponses;
+        response.TotalPages = totalPages;
+        return response;
+    }
+
+    public async Task<UserObjectResponse> DeleteUserAsync(string userId)
+    {
+        UserObjectResponse response = new UserObjectResponse();
+        var user = await _userManager.FindByIdAsync(userId);
+        if (user == null) throw new NotFoundException("User not found!");
+        var result = await _userManager.DeleteAsync(user);
+        if (result.Succeeded)
+        {
+            response.AddMessage("User deleted successfully");
+        }
+        else
+        {
+            response.AddError("Error deleting user");
+        }
+
         return response;
     }
 
