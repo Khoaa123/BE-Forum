@@ -5,6 +5,7 @@ using Be_Voz_Clone.src.Services.DTO.Category;
 using Be_Voz_Clone.src.Shared.Core.Enums;
 using Be_Voz_Clone.src.Shared.Core.Exceptions;
 using Be_Voz_Clone.src.UnitOfWork;
+using Microsoft.EntityFrameworkCore;
 
 namespace Be_Voz_Clone.src.Services.Implement;
 
@@ -41,7 +42,10 @@ public class CategoryService : ICategoryService
 
         var categoryRepository = _unitOfWork.GetRepository<ICategoryRepository>();
 
-        var categories = await categoryRepository.FindByCondition(null);
+        var categories = await categoryRepository.FindByConditionWithIncludeAsync(
+               null,
+               query => query.Include(c => c.Forums)
+        );
         var categoriesPerPage = categories.Skip(skipResults).Take(pageSize).ToList();
         var totalPages = (int)Math.Ceiling((double)categories.Count / pageSize);
 

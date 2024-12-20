@@ -6,6 +6,7 @@ namespace Be_Voz_Clone.src.Services.DTO.Category
     {
         public int Id { get; set; }
         public string Name { get; set; }
+        public int ForumCount { get; set; }
     }
 
     public class CategoryObjectResponse : ObjectResponse<CategoryResponse> { }
