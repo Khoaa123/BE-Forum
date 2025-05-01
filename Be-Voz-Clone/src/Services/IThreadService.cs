@@ -17,5 +17,7 @@ namespace Be_Voz_Clone.src.Services
         Task<ThreadListObjectResponse> GetThreadsByUseridAsync(string userId);
 
         Task<ThreadObjectResponse> ToggleStickyAsync(int id);
+        Task<ThreadListObjectResponse> GetLatestThreadsAsync();
+        Task<ThreadListObjectResponse> GetTrendingThreadsAsync();
     }
 }

@@ -69,7 +69,10 @@ public class AutoMapperConfig : Profile
             .ForMember(dest => dest.AvatarUrl, opt => opt.MapFrom(src => src.User.AvatarUrl));
         CreateMap<VozThread, SearchResponse>()
             .ForMember(x => x.UserName, opt => opt.MapFrom(src => src.User.DisplayName))
+            .ForMember(x => x.AvatarUrl, opt => opt.MapFrom(src => src.User.AvatarUrl))
+            .ForMember(x => x.UserId, opt => opt.MapFrom(src => src.UserId))
             .ForMember(x => x.ForumName, opt => opt.MapFrom(src => src.Forum.Name))
+            .ForMember(x => x.CreatedAt, opt => opt.MapFrom(src => src.CreatedAt))
             .ReverseMap();
         CreateMap<ViewedThread, ViewedThreadResponse>()
             .ForMember(x => x.DisplayName, opt => opt.MapFrom(src => src.User.DisplayName))

@@ -22,41 +22,36 @@ public class SearchService : ISearchService
         int pageSize)
 
     {
-        SearchListObjectResponse response = new();
-        try
-        {
-            var threads = _context.Threads.AsQueryable();
+        SearchListObjectResponse response = new SearchListObjectResponse();
 
-            if (!string.IsNullOrWhiteSpace(keyword))
-                threads = threads.Where(x =>
-                    EF.Functions.ILike(x.Title, $"%{keyword}%") || EF.Functions.ILike(x.Content, $"%{keyword}%"));
-            if (!string.IsNullOrWhiteSpace(forum))
-                threads = threads.Include(x => x.Forum).Where(x => x.Forum != null && x.Forum.Name.Contains(forum));
-            if (!string.IsNullOrWhiteSpace(tag)) threads = threads.Where(x => x.Tag.Contains(tag));
+        var threads = _context.Threads.AsQueryable();
 
-            var totalThreads = await threads.CountAsync();
-            var totalPages = (int)Math.Ceiling((double)totalThreads / pageSize);
+        if (!string.IsNullOrWhiteSpace(keyword))
+            threads = threads.Where(x =>
+                EF.Functions.ILike(x.Title, $"%{keyword}%") || EF.Functions.ILike(x.Content, $"%{keyword}%"));
+        if (!string.IsNullOrWhiteSpace(forum))
+            threads = threads.Include(x => x.Forum).Where(x => x.Forum != null && x.Forum.Name.Contains(forum));
+        if (!string.IsNullOrWhiteSpace(tag)) threads = threads.Where(x => x.Tag.Contains(tag));
 
-            var skipResults = (pageNumber - 1) * pageSize;
-            var pagedThreadsQuery = threads
-                .Skip(skipResults)
-                .Take(pageSize);
+        var totalThreads = await threads.CountAsync();
+        var totalPages = (int)Math.Ceiling((double)totalThreads / pageSize);
 
-            var result = await pagedThreadsQuery
-                .Include(t => t.Forum)
-                .Include(t => t.User)
-                .ToListAsync();
-            if (result == null || result.Count == 0) throw new NotFoundException("No threads found");
-            response.StatusCode = ResponseCode.OK;
-            //response.Message = "Threads retrieved successfully";
-            response.Data = _mapper.Map<List<SearchResponse>>(result);
-            response.TotalPages = totalPages;
-        }
-        catch (Exception ex)
-        {
-            response.StatusCode = ResponseCode.BADREQUEST;
-            //response.Message = "Search failed: " + ex.Message;
-        }
+        var skipResults = (pageNumber - 1) * pageSize;
+        var pagedThreadsQuery = threads
+            .Skip(skipResults)
+            .Take(pageSize);
+
+        var result = await pagedThreadsQuery
+            .Include(t => t.Forum)
+            .Include(t => t.User)
+            .ToListAsync();
+        if (result == null || result.Count == 0) throw new NotFoundException("No threads found");
+        response.StatusCode = ResponseCode.OK;
+        response.AddMessage("Threads retrieved successfully");
+        response.Data = _mapper.Map<List<SearchResponse>>(result);
+        response.TotalPages = totalPages;
+
+
 
         return response;
     }

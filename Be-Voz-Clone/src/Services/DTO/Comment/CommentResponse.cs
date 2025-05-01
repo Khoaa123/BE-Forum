@@ -11,6 +11,7 @@ namespace Be_Voz_Clone.src.Services.DTO.Comment
         public DateTime CreatedAt { get; set; }
         public string ThreadName { get; set; }
         public string UserName { get; set; }
+        public string UserId { get; set; }
         public string AvatarUrl { get; set; }
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public int? ParentCommentId { get; set; }

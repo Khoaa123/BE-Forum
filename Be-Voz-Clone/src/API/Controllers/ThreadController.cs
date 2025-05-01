@@ -75,4 +75,18 @@ public class ThreadController : ControllerBase
         var result = await _threadService.ToggleStickyAsync(id);
         return StatusCode((int)result.StatusCode, result);
     }
+
+    [HttpGet("Latest")]
+    public async Task<IActionResult> GetLatestThreads()
+    {
+        var response = await _threadService.GetLatestThreadsAsync();
+        return StatusCode((int)response.StatusCode, response);
+    }
+
+    [HttpGet("Trending")]
+    public async Task<IActionResult> GetTrendingThreads()
+    {
+        var response = await _threadService.GetTrendingThreadsAsync();
+        return StatusCode((int)response.StatusCode, response);
+    }
 }
