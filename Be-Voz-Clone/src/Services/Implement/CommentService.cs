@@ -70,12 +70,13 @@ public class CommentService : ICommentService
 
         var userRepository = _unitOfWork.GetRepository<IUserRepository>();
         var commentRepository = _unitOfWork.GetRepository<ICommentRepository>();
+        var threadRepository = _unitOfWork.GetRepository<IThreadRepository>();
 
         var user = await userRepository.FirstOrDefaultAsync(u => u.Id == request.UserId);
         if (user == null) throw new NotFoundException("User not found!");
 
-        var thread = await commentRepository.FirstOrDefaultAsync(t => t.Id == request.ThreadId);
-        if (thread == null) throw new NotFoundException("Thread not found!");
+        var thread = await threadRepository.FirstOrDefaultAsync(t => t.Id == request.ThreadId);
+        if (thread == null) throw new NotFoundException($"Thread with ID {request.ThreadId} not found!");
 
         var comment = _mapper.Map<Comment>(request);
         comment.User = user;
