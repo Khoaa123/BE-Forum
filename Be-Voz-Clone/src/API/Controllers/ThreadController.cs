@@ -55,13 +55,6 @@ public class ThreadController : ControllerBase
         return Ok("Đã xem thread");
     }
 
-    //[HttpGet("GetViewedThreads")]
-    //public async Task<IActionResult> GetViewedThreads(string userId, int limit = 10)
-    //{
-    //    var result = await _threadService.GetViewedThread(userId, limit);
-    //    return StatusCode((int)result.StatusCode, result);
-    //}
-
     [HttpGet("GetThreadByUserId")]
     public async Task<IActionResult> GetThreadByUserId(string userId)
     {

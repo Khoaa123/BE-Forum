@@ -5,6 +5,7 @@ using Be_Voz_Clone.src.Services.DTO.Category;
 using Be_Voz_Clone.src.Services.DTO.Comment;
 using Be_Voz_Clone.src.Services.DTO.Forum;
 using Be_Voz_Clone.src.Services.DTO.Reaction;
+using Be_Voz_Clone.src.Services.DTO.SavedThread;
 using Be_Voz_Clone.src.Services.DTO.Search;
 using Be_Voz_Clone.src.Services.DTO.Thread;
 using Be_Voz_Clone.src.Services.DTO.User;
@@ -92,6 +93,14 @@ public class AutoMapperConfig : Profile
         CreateMap<Reaction, ReactionResponse>()
             .ForMember(x => x.UserName, opt => opt.MapFrom(src => src.User.DisplayName))
             .ForMember(x => x.AvatarUrl, opt => opt.MapFrom(src => src.User.AvatarUrl))
+            .ReverseMap();
+        CreateMap<SavedThread, SavedThreadResponse>()
+            .ForMember(x => x.DisplayName, opt => opt.MapFrom(src => src.Thread.User.DisplayName))
+            .ForMember(x => x.Tag, opt => opt.MapFrom(src => src.Thread.Tag))
+            .ForMember(x => x.ForumName, opt => opt.MapFrom(src => src.Thread.Forum.Name))
+            .ForMember(x => x.CreatedAt, opt => opt.MapFrom(src => src.Thread.CreatedAt))
+            .ForMember(x => x.ThreadName, opt => opt.MapFrom(src => src.Thread.Title))
+            .ForMember(x => x.ThreadContent, opt => opt.MapFrom(src => src.Thread.Content))
             .ReverseMap();
     }
 }

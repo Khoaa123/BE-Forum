@@ -19,5 +19,7 @@ namespace Be_Voz_Clone.src.Repositories
         Task<T> Update(T entity);
 
         Task<T> Remove(T entity);
+
+        Task<bool> AnyAsync(Expression<Func<T, bool>> filter);
     }
 }

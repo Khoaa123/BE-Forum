@@ -18,6 +18,7 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<EmojiAndSticker> EmojiAndStickers { get; set; }
     public DbSet<Reaction> Reactions { get; set; }
     public DbSet<ViewedThread> ViewedThreads { get; set; }
+    public DbSet<SavedThread> SavedThreads { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

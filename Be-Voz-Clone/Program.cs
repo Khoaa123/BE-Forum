@@ -83,6 +83,8 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IForumRepository, ForumRepository>();
 builder.Services.AddScoped<IThreadRepository, ThreadRepository>();
 builder.Services.AddScoped<IViewedThreadRepository, ViewedThreadRepository>();
+builder.Services.AddScoped<ISavedThreadRepository, SavedThreadRepository>();
+builder.Services.AddScoped<ISavedThreadService, SavedThreadService>();
 
 builder.Services.AddAutoMapper(typeof(Program));
 var app = builder.Build();

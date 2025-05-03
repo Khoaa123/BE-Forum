@@ -100,5 +100,11 @@ namespace Be_Voz_Clone.src.Repositories.Implement
             _context.Update(entity);
             return entity;
         }
+
+        // Kiểm tra sự tồn tại của entity theo điều kiện filter
+        public async Task<bool> AnyAsync(Expression<Func<T, bool>> filter)
+        {
+            return await _dbSet.AnyAsync(filter);
+        }
     }
 }
