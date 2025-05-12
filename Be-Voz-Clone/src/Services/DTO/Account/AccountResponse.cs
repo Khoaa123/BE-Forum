@@ -8,6 +8,7 @@ namespace Be_Voz_Clone.src.Services.DTO.Account
         public string UserName { get; set; }
         public string DisplayName { get; set; }
         public string? AvatarUrl { get; set; }
+        public string Role { get; set; }
         public DateTime JoinedDate { get; set; }
     }
 

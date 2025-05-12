@@ -8,5 +8,7 @@ namespace Be_Voz_Clone.src.Services
         Task<AccountListObjectResponse> GetAllUserAsync(int pageNumber, int pageSize);
         Task<BaseResponse> BanUserAsync(string userId);
         Task<BaseResponse> UnbanUserAsync(string userId);
+        Task<BaseResponse> ChangeUserRoleAsync(string userId, string newRole);
+
     }
 }

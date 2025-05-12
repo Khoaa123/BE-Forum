@@ -1,4 +1,5 @@
 ﻿using Be_Voz_Clone.src.Services;
+using Be_Voz_Clone.src.Services.DTO.Admin;
 using Microsoft.AspNetCore.Mvc;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
@@ -36,5 +37,13 @@ namespace Be_Voz_Clone.src.API.Controllers
             var result = await _adminService.UnbanUserAsync(userId);
             return StatusCode((int)result.StatusCode, result);
         }
+
+        [HttpPost("ChangeUserRole")]
+        public async Task<IActionResult> ChangeUserRole([FromBody] ChangeRoleRequest request)
+        {
+            var result = await _adminService.ChangeUserRoleAsync(request.UserId, request.NewRole);
+            return StatusCode((int)result.StatusCode, result);
+        }
+
     }
 }

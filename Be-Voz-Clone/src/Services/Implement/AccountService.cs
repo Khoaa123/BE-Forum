@@ -113,6 +113,7 @@ public class AccountService : IAccountService
         var existingUser = await _userManager.FindByNameAsync(request.UserName);
         if (existingUser != null) throw new BadRequestException("User already exists!");
         var user = _mapper.Map<ApplicationUser>(request);
+        user.JoinedDate = DateTime.Now;
         var result = await _userManager.CreateAsync(user, request.Password);
         if (result.Succeeded)
         {
