@@ -25,7 +25,9 @@ public class AutoMapperConfig : Profile
 
         CreateMap<Category, CategoryRequest>().ReverseMap();
         CreateMap<Category, CategoryResponse>()
-            .ForMember(x => x.ForumCount, opt => opt.MapFrom(src => src.Forums.Count));
+            .ForMember(x => x.ForumCount, opt => opt.MapFrom(src => src.Forums.Count))
+             .ForMember(dest => dest.Forums,
+                       opt => opt.MapFrom(src => src.Forums.Select(f => f.Name).ToList()));
         CreateMap<Forum, ForumRequest>().ReverseMap();
         CreateMap<Forum, ForumResponse>()
             .ForMember(x => x.CategoryName, opt => opt.MapFrom(src => src.Category.Name))
