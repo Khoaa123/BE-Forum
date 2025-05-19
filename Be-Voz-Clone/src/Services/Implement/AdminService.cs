@@ -152,24 +152,33 @@ namespace Be_Voz_Clone.src.Services.Implement
         public async Task<BaseResponse> UnbanUserAsync(string userId)
         {
             var response = new BaseResponse();
+
             var user = await _userManager.FindByIdAsync(userId);
             if (user == null)
             {
                 throw new NotFoundException("User not found!");
             }
 
+            if (!user.LockoutEnabled || user.LockoutEnd == null || user.LockoutEnd <= DateTimeOffset.Now)
+            {
+                response.AddMessage("User is not currently banned.");
+                return response;
+            }
+
             user.LockoutEnd = null;
+
             var result = await _userManager.UpdateAsync(user);
             if (result.Succeeded)
             {
-                response.AddMessage("User unbanned successfully");
+                response.AddMessage("User unbanned successfully.");
             }
             else
             {
-                response.AddError("Failed to unban user");
+                response.AddError("Failed to unban user.");
             }
 
             return response;
         }
+
     }
 }

@@ -21,7 +21,8 @@ public class AutoMapperConfig : Profile
         CreateMap<ApplicationUser, AccountRegisterResponse>().ReverseMap();
         CreateMap<ApplicationUser, AccountLoginRequest>().ReverseMap();
         CreateMap<ApplicationUser, UserResponse>().ReverseMap();
-        CreateMap<ApplicationUser, AccountResponse>();
+        CreateMap<ApplicationUser, AccountResponse>()
+            .ForMember(x => x.IsBanned, opt => opt.MapFrom(src => src.LockoutEnabled && src.LockoutEnd.HasValue && src.LockoutEnd.Value.UtcDateTime > DateTime.Now));
 
         CreateMap<Category, CategoryRequest>().ReverseMap();
         CreateMap<Category, CategoryResponse>()

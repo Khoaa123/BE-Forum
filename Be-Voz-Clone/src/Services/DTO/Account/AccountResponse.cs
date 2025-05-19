@@ -10,6 +10,7 @@ namespace Be_Voz_Clone.src.Services.DTO.Account
         public string? AvatarUrl { get; set; }
         public string Role { get; set; }
         public DateTime JoinedDate { get; set; }
+        public bool IsBanned { get; set; }
     }
 
     public class AccountObjectResponse : ObjectResponse<AccountResponse> { }
